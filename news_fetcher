@@ -1,0 +1,25 @@
+# news_fetcher.py
+from newspaper import Article
+
+def fetch_article_text(url, lang='pl'):
+    """
+    Pobiera i analizuje artykuł z podanego URL-a.
+    Parametr 'lang' (np. 'pl' lub 'en') wskazuje język strony.
+    Zwraca tekst artykułu lub None w razie błędu.
+    """
+    try:
+        article = Article(url, language=lang)
+        article.download()
+        article.parse()
+        text = article.text
+        return text
+    except Exception as e:
+        print(f"Nie udało się pobrać artykułu: {e}")
+        return None
+
+# Przykład użycia:
+if __name__ == "__main__":
+    url = "https://example.com/wiadomosc.html"
+    content = fetch_article_text(url, lang='pl')
+    if content:
+        print("Tekst artykułu:", content[:200], "...")
