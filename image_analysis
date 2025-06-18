@@ -1,0 +1,60 @@
+# image_analysis.py
+import torch
+import torchvision
+from torchvision import transforms
+from PIL import Image
+import pytesseract
+
+class ImageAnalyzer:
+    def __init__(self):
+        # Ładowanie wstępnie wytrenowanego modelu Faster R-CNN (COCO) z TorchVision
+        self.detection_model = torchvision.models.detection.fasterrcnn_resnet50_fpn(
+            weights=torchvision.models.detection.FasterRCNN_ResNet50_FPN_Weights.DEFAULT
+        )
+        self.detection_model.eval()  # tryb ewaluacji
+
+        # Transformacja obrazu do formatu wymaganego przez model (tensor i normalizacja)
+        self.transform = transforms.Compose([
+            transforms.ToTensor()
+        ])
+
+    def detect_objects(self, image_path, threshold=0.5):
+        """
+        Wykrywanie obiektów na obrazie. Zwraca listę wykrytych obiektów z etykietami i pewnościami.
+        """
+        image = Image.open(image_path).convert("RGB")
+        tensor = self.transform(image)
+        with torch.no_grad():
+            outputs = self.detection_model([tensor])[0]
+        boxes = outputs['boxes']
+        labels = outputs['labels']
+        scores = outputs['scores']
+        # Filtrowanie po pewności
+        detected = []
+        for box, label, score in zip(boxes, labels, scores):
+            if score >= threshold:
+                detected.append({
+                    "box": box.numpy().tolist(),
+                    "label": int(label),
+                    "score": float(score)
+                })
+        return detected
+
+    def extract_text(self, image_path, lang='pol'):
+        """
+        OCR: wyodrębnianie tekstu z obrazu (np. skanu dokumentu).
+        Parametr 'lang' określa język dla Tesseract (np. 'pol' dla polskiego, 'eng' dla angielskiego).
+        """
+        image = Image.open(image_path)
+        # Użycie pytesseract do OCR
+        text = pytesseract.image_to_string(image, lang=lang)
+        return text.strip()
+
+# Przykład użycia:
+if __name__ == "__main__":
+    analyzer = ImageAnalyzer()
+    img_path = "przyklad.jpg"
+    objects = analyzer.detect_objects(img_path)
+    print("Wykryte obiekty:", objects)
+    ocr_text = analyzer.extract_text(img_path, lang='eng')
+    print("Tekst z obrazu:", ocr_text)
