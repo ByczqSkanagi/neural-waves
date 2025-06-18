@@ -1,0 +1,26 @@
+# intent_model.py
+from transformers import pipeline
+
+class IntentModel:
+    def __init__(self, model_name="bert-base-multilingual-cased"):
+        """
+        Inicjalizacja: ładowanie wstępnie wytrenowanego modelu do klasyfikacji tekstu.
+        Model "bert-base-multilingual-cased" obsługuje wiele języków (w tym polski i angielski).
+        """
+        # Pipeline do klasyfikacji tekstu (domyślnie sentiment lub inna dostępna etykieta)
+        self.classifier = pipeline("text-classification", model=model_name)
+
+    def predict_intent(self, text):
+        """
+        Analiza intencji w podanym tekście. Zwraca listę wyników: etykieta i prawdopodobieństwo.
+        """
+        results = self.classifier(text)
+        # Przykładowy zwrot: [{'label': 'POSITIVE', 'score': 0.99}]
+        return results
+
+# Przykład użycia:
+if __name__ == "__main__":
+    intent_model = IntentModel()
+    text = "Chcę zarezerwować stolik na jutro wieczorem."
+    result = intent_model.predict_intent(text)
+    print(f"Intencja tekstu: {result}")
