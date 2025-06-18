@@ -1,0 +1,39 @@
+# train_intent_model.py
+from transformers import BertTokenizer, BertForSequenceClassification, Trainer, TrainingArguments
+from datasets import load_dataset
+
+# 1. Wczytanie zbioru danych
+dataset = load_dataset("csv", data_files={"train": "data/train.csv", "test": "data/test.csv"})
+
+# 2. Tokenizacja
+tokenizer = BertTokenizer.from_pretrained("bert-base-multilingual-cased")
+def tokenize(example):
+    return tokenizer(example['text'], truncation=True, padding=True)
+
+tokenized = dataset.map(tokenize, batched=True)
+
+# 3. Przygotowanie modelu
+model = BertForSequenceClassification.from_pretrained("bert-base-multilingual-cased", num_labels=3)
+
+# 4. Argumenty treningowe
+training_args = TrainingArguments(
+    output_dir="./models/intent_model",
+    evaluation_strategy="epoch",
+    per_device_train_batch_size=8,
+    per_device_eval_batch_size=8,
+    num_train_epochs=3,
+    save_steps=500,
+    save_total_limit=2,
+)
+
+# 5. Trening
+trainer = Trainer(
+    model=model,
+    args=training_args,
+    train_dataset=tokenized["train"],
+    eval_dataset=tokenized["test"],
+)
+
+trainer.train()
+trainer.save_model("./models/intent_model")
+tokenizer.save_pretrained("./models/intent_model")
