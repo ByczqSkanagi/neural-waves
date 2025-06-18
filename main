@@ -1,42 +1,33 @@
-# Importy
-from sklearn.datasets import load_iris
-from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import StandardScaler
-from sklearn.neighbors import KNeighborsClassifier
-from sklearn.metrics import classification_report, accuracy_score, confusion_matrix
-import matplotlib.pyplot as plt
-import seaborn as sns
+# main.py
+from intent_model import IntentModel
+from image_analysis import ImageAnalyzer
+from news_fetcher import fetch_article_text
+from tts_generator import tts_gtts
 
-# 1. Wczytanie zbioru danych Iris
-iris = load_iris()
-X = iris.data        # cechy (features)
-y = iris.target      # etykiety (klasy)
+def main():
+    # Inicjalizacja modeli
+    intent_model = IntentModel()
+    image_analyzer = ImageAnalyzer()
 
-# 2. Podział danych na zestaw treningowy i testowy (80/20)
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+    # Przykład analizy tekstu
+    tekst = "Rezerwacja sali konferencyjnej na poniedziałek."
+    intent = intent_model.predict_intent(tekst)
+    print("Wynik klasyfikacji intencji:", intent)
 
-# 3. Skalowanie danych (opcjonalne, ale zalecane dla KNN)
-scaler = StandardScaler()
-X_train = scaler.fit_transform(X_train)
-X_test = scaler.transform(X_test)
+    # Przykład analizy obrazu
+    obraz_path = "zdjecie_dokument.jpg"
+    ocr_text = image_analyzer.extract_text(obraz_path, lang='pol')
+    print("OCR z obrazu:", ocr_text)
 
-# 4. Tworzenie i trenowanie modelu KNN
-knn = KNeighborsClassifier(n_neighbors=3)
-knn.fit(X_train, y_train)
+    # Przykład pobierania artykułu z internetu
+    url = "https://przyklad.com/wiadomosc"
+    artykul = fetch_article_text(url, lang='pl')
+    if artykul:
+        print("Pobrany tekst artykułu (fragment):", artykul[:100], "...")
 
-# 5. Przewidywanie wyników na zbiorze testowym
-y_pred = knn.predict(X_test)
+    # Generowanie mowy (TTS)
+    if artykul:
+        tts_gtts(artykul[:100], lang='pl', filename="article_fragment.mp3")
 
-# 6. Ocena modelu
-print("Accuracy:", accuracy_score(y_test, y_pred))
-print("\nClassification report:\n", classification_report(y_test, y_pred))
-
-# 7. Macierz pomyłek (confusion matrix)
-cm = confusion_matrix(y_test, y_pred)
-plt.figure(figsize=(6, 4))
-sns.heatmap(cm, annot=True, cmap="Blues", fmt="d", xticklabels=iris.target_names, yticklabels=iris.target_names)
-plt.title("Macierz pomyłek - KNN na Iris")
-plt.xlabel("Przewidywana klasa")
-plt.ylabel("Rzeczywista klasa")
-plt.tight_layout()
-plt.show()
+if __name__ == "__main__":
+    main()
