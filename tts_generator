@@ -1,0 +1,32 @@
+# tts_generator.py
+from gtts import gTTS
+import pyttsx3
+import os
+
+def tts_gtts(text, lang='pl', filename="output.mp3"):
+    """
+    Generuje plik MP3 z mową za pomocą Google TTS (must dostęp do Internetu).
+    """
+    tts = gTTS(text=text, lang=lang)
+    tts.save(filename)
+    print(f"Zapisano plik dźwiękowy: {filename}")
+
+def tts_pyttsx(text, lang='pl', filename="output.mp3"):
+    """
+    Generuje plik MP3 z mową używając pyttsx3 (offline).
+    Uwaga: pyttsx3 wymaga zainstalowania odpowiednich silników (espeak, sapi5).
+    """
+    engine = pyttsx3.init()
+    # Przykładowo można zmienić głos (voice) lub szybkość mówienia:
+    # engine.setProperty('rate', 150)
+    # Dostępne głosy można przeglądnąć: engine.getProperty('voices')
+    engine.save_to_file(text, filename)
+    engine.runAndWait()
+    print(f"Zapisano plik dźwiękowy (offline): {filename}")
+
+# Przykład użycia:
+if __name__ == "__main__":
+    tekst = "To jest przykład generowania mowy."
+    tts_gtts(tekst, lang='pl', filename="pl_output.mp3")
+    # Jeśli chcemy pracować offline:
+    tts_pyttsx(tekst, lang='pl', filename="pl_output_offline.mp3")
