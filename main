@@ -31,3 +31,11 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+from intent_model import IntentClassifier
+
+intent_model = IntentClassifier()
+
+user_input = "Jaka jest pogoda w Londynie?"
+intent = intent_model.predict(user_input)
+print(f"Przewidywana intencja: {intent['label']} (pewność: {intent['score']:.2f})")
